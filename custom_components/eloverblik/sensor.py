@@ -1,5 +1,7 @@
 """Platform for Eloverblik sensor integration."""
-from datetime import datetime, timedelta
+import base64
+from datetime import datetime, timedelta, timezone
+import json
 import logging
 import math
 from homeassistant.util import dt as dt_util
@@ -24,7 +26,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.util import Throttle
 from homeassistant.util.unit_conversion import EnergyConverter
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import Entity, EntityCategory
 from pyeloverblik.models import TimeSeries
 from . import HassEloverblik, MIN_TIME_BETWEEN_UPDATES
 from .const import DOMAIN, CURRENCY_KRONER_PER_KILO_WATT_HOUR
@@ -43,6 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry, async_add_
     for hour in range(1, 25):
         sensors.append(EloverblikEnergy(f"Eloverblik Energy {hour-1}-{hour}", 'hour', eloverblik, hour))
     sensors.append(EloverblikTariff("Eloverblik Tariff Sum", eloverblik))
+    sensors.append(EloverblikTokenExpiry(config.data["refresh_token"], eloverblik))
     energy_statistic = EloverblikStatistic(eloverblik)
     sensors.append(energy_statistic)
     area = config.options.get("spot_price_area", "disabled")
@@ -217,6 +220,32 @@ class EloverblikTariff(Entity):
 
         self._data_hourly_tariff_sums = [self._data.get_tariff_sum_hour(h) for h in range(1, 25)]
         self._state = self._data_hourly_tariff_sums[dt_util.now().hour]
+
+
+def _token_expiry(refresh_token: str) -> datetime | None:
+    """Read the expiry ("exp" claim) from the refresh token without verifying it."""
+    try:
+        payload = refresh_token.strip().split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+        return datetime.fromtimestamp(int(claims["exp"]), tz=timezone.utc)
+    except (IndexError, KeyError, TypeError, ValueError):
+        return None
+
+
+class EloverblikTokenExpiry(SensorEntity):
+    """When the configured refresh token expires (read from the token itself)."""
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:key-alert"
+    _attr_should_poll = False
+
+    def __init__(self, refresh_token: str, hass_eloverblik: HassEloverblik):
+        self._attr_name = "Eloverblik Token Expires"
+        self._attr_unique_id = f"{hass_eloverblik.get_metering_point()}-token-expires"
+        self._attr_native_value = _token_expiry(refresh_token)
+        if self._attr_native_value is None:
+            _LOGGER.warning("Could not read the expiry date from the Eloverblik refresh token")
 
 
 class EloverblikStatistic(SensorEntity):
