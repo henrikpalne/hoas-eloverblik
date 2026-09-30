@@ -5,6 +5,7 @@
 > **Fork of [dknn/hoas-eloverblik](https://github.com/dknn/hoas-eloverblik).** Adds replacing the refresh token without removing the integration:
 > - **Reconfigure**: *Settings → Devices & services → Eloverblik → ⋮ → Reconfigure* and paste a new token.
 > - **Re-authenticate**: when eloverblik.dk rejects the token, Home Assistant shows a repair prompt where the new token can be entered.
+> - **Token expiry sensor**: `sensor.eloverblik_token_expires` (diagnostic, timestamp) shows when the current refresh token expires, read locally from the token — use it to automate a reminder.
 >
 > Install in HACS as a custom repository: `https://github.com/henrikpalne/hoas-eloverblik` (type *Integration*).
 
