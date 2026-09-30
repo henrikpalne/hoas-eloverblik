@@ -7,7 +7,31 @@
                     "metering_point": "MålepunktsID"
                 },
                 "title": "Indsæt opdateringstoken og målepunktsID"
+            },
+            "reconfigure": {
+                "title": "Nyt opdateringstoken",
+                "description": "Indsæt et nyt opdateringstoken fra eloverblik.dk (Datadeling → Opret token) for målepunkt {metering_point}.",
+                "data": {
+                    "refresh_token": "Opdateringstoken"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Opdateringstoken er udløbet",
+                "description": "Eloverblik afviser det nuværende token for målepunkt {metering_point}. Opret et nyt på eloverblik.dk (Datadeling → Opret token) og indsæt det her.",
+                "data": {
+                    "refresh_token": "Opdateringstoken"
+                }
             }
+        },
+        "error": {
+            "cannot_connect": "Kunne ikke forbinde til eloverblik.dk – prøv igen",
+            "invalid_auth": "Token blev afvist af eloverblik.dk",
+            "unknown": "Uventet fejl"
+        },
+        "abort": {
+            "already_configured": "Målepunktet er allerede konfigureret",
+            "reconfigure_successful": "Token er opdateret",
+            "reauth_successful": "Token er opdateret"
         }
     },
   "options": {

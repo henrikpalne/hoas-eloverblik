@@ -17,6 +17,8 @@ DATA_SCHEMA = vol.Schema(
         vol.Required("metering_point",): str
     })
 
+TOKEN_SCHEMA = vol.Schema({vol.Required("refresh_token"): str})
+
 async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect.
 
@@ -78,6 +80,62 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user", data_schema=DATA_SCHEMA, errors=errors
+        )
+
+    async def _async_validate_token(self, entry, user_input):
+        """Validate a new token against the entry's metering point."""
+        try:
+            await validate_input(self.hass, {
+                "refresh_token": user_input["refresh_token"].strip(),
+                "metering_point": entry.data["metering_point"],
+            })
+        except CannotConnect:
+            return "cannot_connect"
+        except InvalidAuth:
+            return "invalid_auth"
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("Unexpected exception")
+            return "unknown"
+        return None
+
+    async def async_step_reconfigure(self, user_input=None):
+        """Replace the refresh token without removing the integration."""
+        entry = self._get_reconfigure_entry()
+        errors = {}
+        if user_input is not None:
+            error = await self._async_validate_token(entry, user_input)
+            if error is None:
+                return self.async_update_reload_and_abort(
+                    entry, data_updates={"refresh_token": user_input["refresh_token"].strip()}
+                )
+            errors["base"] = error
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=TOKEN_SCHEMA,
+            errors=errors,
+            description_placeholders={"metering_point": entry.data["metering_point"]},
+        )
+
+    async def async_step_reauth(self, entry_data):
+        """Start re-authentication when the token has expired."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input=None):
+        """Ask for a new refresh token."""
+        entry = self._get_reauth_entry()
+        errors = {}
+        if user_input is not None:
+            error = await self._async_validate_token(entry, user_input)
+            if error is None:
+                return self.async_update_reload_and_abort(
+                    entry, data_updates={"refresh_token": user_input["refresh_token"].strip()}
+                )
+            errors["base"] = error
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=TOKEN_SCHEMA,
+            errors=errors,
+            description_placeholders={"metering_point": entry.data["metering_point"]},
         )
 
 class OptionsFlow(config_entries.OptionsFlow):

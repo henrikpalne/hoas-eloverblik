@@ -37,6 +37,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     metering_point = entry.data['metering_point']
     
     hass.data[DOMAIN][entry.entry_id] = HassEloverblik(refresh_token, metering_point)
+    # Updates run in executor threads - start reauth safely on the event loop
+    hass.data[DOMAIN][entry.entry_id].on_auth_failed = (
+        lambda: hass.loop.call_soon_threadsafe(entry.async_start_reauth, hass)
+    )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_options_updated))
@@ -68,6 +72,7 @@ class HassEloverblik:
     def __init__(self, refresh_token, metering_point):
         self._client = Eloverblik(refresh_token)
         self._metering_point = metering_point
+        self.on_auth_failed = None
 
         self._day_data = None
         self._year_data = None
@@ -210,6 +215,8 @@ class HassEloverblik:
             message = None
             if he.response.status_code == 401:
                 message = f"Unauthorized error while accessing eloverblik.dk. Wrong or expired refresh token?"
+                if self.on_auth_failed:
+                    self.on_auth_failed()
             else:
                 e = sys.exc_info()[1]
                 message = f"Exception: {e}"
@@ -235,6 +242,8 @@ class HassEloverblik:
             message = None
             if he.response.status_code == 401:
                 message = f"Unauthorized error while accessing eloverblik.dk. Wrong or expired refresh token?"
+                if self.on_auth_failed:
+                    self.on_auth_failed()
             else:
                 e = sys.exc_info()[1]
                 message = f"Exception: {e}"
@@ -260,6 +269,8 @@ class HassEloverblik:
             message = None
             if he.response.status_code == 401:
                 message = f"Unauthorized error while accessing eloverblik.dk. Wrong or expired refresh token?"
+                if self.on_auth_failed:
+                    self.on_auth_failed()
             else:
                 e = sys.exc_info()[1]
                 message = f"Exception: {e}"

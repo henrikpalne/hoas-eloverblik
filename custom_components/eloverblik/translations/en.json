@@ -7,7 +7,31 @@
                     "metering_point": "Metering Point"
                 },
                 "title": "Enter refresh token and metering point"
+            },
+            "reconfigure": {
+                "title": "New refresh token",
+                "description": "Paste a new refresh token from eloverblik.dk (Data sharing → Create token) for metering point {metering_point}.",
+                "data": {
+                    "refresh_token": "Refresh Token"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Refresh token expired",
+                "description": "Eloverblik rejects the current token for metering point {metering_point}. Create a new one on eloverblik.dk and paste it here.",
+                "data": {
+                    "refresh_token": "Refresh Token"
+                }
             }
+        },
+        "error": {
+            "cannot_connect": "Failed to connect, please try again",
+            "invalid_auth": "Token was rejected by eloverblik.dk",
+            "unknown": "Unexpected error"
+        },
+        "abort": {
+            "already_configured": "Metering point is already configured",
+            "reconfigure_successful": "Token updated",
+            "reauth_successful": "Token updated"
         }
     },
   "options": {
