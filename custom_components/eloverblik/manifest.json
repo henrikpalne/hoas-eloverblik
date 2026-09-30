@@ -8,14 +8,14 @@
   "dependencies": [
     "recorder"
   ],
-  "documentation": "https://github.com/dknn/hoas-eloverblik",
+  "documentation": "https://github.com/henrikpalne/hoas-eloverblik",
   "homekit": {},
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/dknn/hoas-eloverblik/issues",
+  "issue_tracker": "https://github.com/henrikpalne/hoas-eloverblik/issues",
   "requirements": [
     "pyeloverblik==0.4.4"
   ],
   "ssdp": [],
-  "version": "0.6.2",
+  "version": "0.6.2.1",
   "zeroconf": []
 }

@@ -2,6 +2,12 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
 
+> **Fork of [dknn/hoas-eloverblik](https://github.com/dknn/hoas-eloverblik).** Adds replacing the refresh token without removing the integration:
+> - **Reconfigure**: *Settings → Devices & services → Eloverblik → ⋮ → Reconfigure* and paste a new token.
+> - **Re-authenticate**: when eloverblik.dk rejects the token, Home Assistant shows a repair prompt where the new token can be entered.
+>
+> Install in HACS as a custom repository: `https://github.com/henrikpalne/hoas-eloverblik` (type *Integration*).
+
 HOAS Eloverblik is a community-maintained continuation of the original [homeassistant-eloverblik](https://github.com/JonasPed/homeassistant-eloverblik) integration. It is a Home Assistant custom component for monitoring electricity data from [eloverblik.dk](https://eloverblik.dk).
 
 The integration keeps the Home Assistant domain `eloverblik` so existing installations have the best possible migration path. It is not affiliated with or endorsed by the original author or Eloverblik.dk.
